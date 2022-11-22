@@ -233,7 +233,15 @@ class Plugin extends \craft\base\Plugin
                         {
                             let currentlyPreviewing;
 
-                            const alertGatsby = async function (event, doPreview) {
+                            function debounce(func, timeout = 300){
+                                let timer;
+                                return (...args) => {
+                                    clearTimeout(timer);
+                                    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+                                };
+                            }
+
+                            const alertGatsby = debounce(async function (event, doPreview) {
                                 const url = doPreview ? event.previewTarget.url : '$previewWebhookUrl';
                                 const compareUrl = new URL(url);
 
@@ -268,7 +276,7 @@ class Plugin extends \craft\base\Plugin
                                 http.setRequestHeader('Content-type', 'application/json');
                                 http.setRequestHeader('x-preview-update-source', 'Craft CMS');
                                 http.send(JSON.stringify(payload));
-                            }
+                            });
 
                             Garnish.on(Craft.Preview, 'beforeUpdateIframe', function(event) {
                                 alertGatsby(event, true);
