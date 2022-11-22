@@ -263,20 +263,18 @@ class Plugin extends \craft\base\Plugin
                                     siteId: {$element->siteId}
                                 };
 
-                                if (doPreview) {
-                                    if(event.target.elementEditor) {
-                                        payload.token = await event.target.elementEditor.getPreviewToken();
-                                    } else {
-                                        payload.token = await event.target.draftEditor.getPreviewToken();
-                                    }
-                                } else {
-                                    currentlyPreviewing = null;
-                                }
-
                                 http.open('POST', "$previewWebhookUrl", true);
                                 http.setRequestHeader('Content-type', 'application/json');
                                 http.setRequestHeader('x-preview-update-source', 'Craft CMS');
                                 http.setRequestHeader('x-gatsby-cloud-data-source', '$gatsbyCloudDataSource');
+
+                                if (doPreview) {
+                                    payload.token = await event.target.elementEditor.getPreviewToken();
+                                } else {
+                                    currentlyPreviewing = null;
+
+                                }
+
                                 http.send(JSON.stringify(payload));
                             };
 
