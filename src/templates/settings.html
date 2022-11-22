@@ -18,3 +18,12 @@
   suggestEnvVars: true,
   suggestAliases: true,
 }) }}
+
+{{ forms.autosuggestField({
+  label: 'Gatsby Cloud Data Source Header'|t('gatsby-helper'),
+  instructions: 'The Gatsby "x-gatsby-cloud-data-source" header value". Must include "gatsby-source" to be considered a valid source.'|t('gatsby-helper'),
+  name: 'gatsbyCloudDataSource',
+  value: settings.gatsbyCloudDataSource,
+  suggestEnvVars: true,
+  suggestAliases: true,
+}) }}

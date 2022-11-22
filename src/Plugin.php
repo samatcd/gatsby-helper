@@ -216,12 +216,13 @@ class Plugin extends \craft\base\Plugin
     private function _registerLivePreviewListener(): void
     {
         $previewWebhookUrl = Craft::parseEnv($this->getSettings()->previewWebhookUrl);
+        $gatsbyCloudDataSource = Craft::parseEnv($this->getSettings()->gatsbyCloudDataSource);
 
         if (!empty($previewWebhookUrl)) {
             Event::on(
                 Entry::class,
                 Entry::EVENT_REGISTER_PREVIEW_TARGETS,
-                function(RegisterPreviewTargetsEvent $event) use ($previewWebhookUrl) {
+                function(RegisterPreviewTargetsEvent $event) use ($previewWebhookUrl, $gatsbyCloudDataSource) {
                     /** @var Element $element */
                     $element = $event->sender;
 
@@ -241,7 +242,7 @@ class Plugin extends \craft\base\Plugin
                                 };
                             }
 
-                            const alertGatsby = debounce(async function (event, doPreview) {
+                            const alertGatsby = async function (event, doPreview) {
                                 const url = doPreview ? event.previewTarget.url : '$previewWebhookUrl';
                                 const compareUrl = new URL(url);
 
@@ -261,7 +262,7 @@ class Plugin extends \craft\base\Plugin
                                     id: currentlyPreviewing,
                                     siteId: {$element->siteId}
                                 };
-                                
+
                                 if (doPreview) {
                                     if(event.target.elementEditor) {
                                         payload.token = await event.target.elementEditor.getPreviewToken();
@@ -271,24 +272,25 @@ class Plugin extends \craft\base\Plugin
                                 } else {
                                     currentlyPreviewing = null;
                                 }
-                                
+
                                 http.open('POST', "$previewWebhookUrl", true);
                                 http.setRequestHeader('Content-type', 'application/json');
                                 http.setRequestHeader('x-preview-update-source', 'Craft CMS');
+                                http.setRequestHeader('x-gatsby-cloud-data-source', '$gatsbyCloudDataSource');
                                 http.send(JSON.stringify(payload));
+                            };
+
+                            const alertGatsbyNoPreview = debounce(function(event) {
+                                alertGatsby(event, false);
                             });
 
-                            Garnish.on(Craft.Preview, 'beforeUpdateIframe', function(event) {
+                            Garnish.on(Craft.Preview, 'beforeUpdateIframe', debounce(function(event) {
                                 alertGatsby(event, true);
-                            });
-                            
-                            Garnish.on(Craft.Preview, 'beforeClose', function(event) {
-                                alertGatsby(event, false);
-                            });
+                            }));
 
-                            Garnish.\$win.on('beforeunload', function(event) {
-                                alertGatsby(event, false);
-                            });
+                            Garnish.on(Craft.Preview, 'beforeClose', alertGatsbyNoPreview);
+
+                            Garnish.\$win.on('beforeunload', alertGatsbyNoPreview);
                         }
 JS;
 

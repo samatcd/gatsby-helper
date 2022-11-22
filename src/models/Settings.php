@@ -23,7 +23,14 @@ class Settings extends Model
      *
      * @var string
      */
+
     public string $previewWebhookUrl = '';
+    /**
+     * The full URL where the plugin should let Gatsby know to trigger preview
+     *
+     * @var string
+     */
+    public string $gatsbyCloudDataSource = '';
 
     /**
      * The full URL where the plugin should let Gatsby know to trigger a site build
