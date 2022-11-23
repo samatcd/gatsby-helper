@@ -234,6 +234,8 @@ class Plugin extends \craft\base\Plugin
                         {
                             let currentlyPreviewing;
 
+                            console.log('Applying preview webhook code');
+
                             function debounce(func, timeout = 300){
                                 let timer;
                                 return (...args) => {
@@ -243,14 +245,19 @@ class Plugin extends \craft\base\Plugin
                             }
 
                             const alertGatsby = async function (event, doPreview) {
-                                const url = doPreview ? event.previewTarget.url : '$previewWebhookUrl';
-                                const compareUrl = new URL(url);
 
                                 if (doPreview) {
                                     currentlyPreviewing = $elementId;
                                 }
 
                                 if (!currentlyPreviewing) {
+                                    return;
+                                }
+
+                                console.log(event.previewTarget.url, event.target.elementEditor.preview.url)
+
+                                if(compareTarget.pathname !== compareUrl.pathname) {
+                                    console.warn('Preview URL is not the same as the current preview URL, not triggering a build');
                                     return;
                                 }
 
@@ -270,12 +277,14 @@ class Plugin extends \craft\base\Plugin
 
                                 if (doPreview) {
                                     payload.token = await event.target.elementEditor.getPreviewToken();
+
+                                    const compareTarget = event.previewTarget.url;
+                                    const compareUrl = new URI(event.target.elementEditor.preview.url);
+
+
                                 } else {
                                     currentlyPreviewing = null;
-
                                 }
-
-                                console.log('sending '.(doPreview ? 'preview' : 'build').' payload to $previewWebhookUrl', payload);
 
                                 http.send(JSON.stringify(payload));
                             };
