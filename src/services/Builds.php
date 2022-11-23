@@ -35,13 +35,15 @@ class Builds extends Component
     public function triggerBuild(): void
     {
         $buildWebhookUrl = App::parseEnv(Plugin::getInstance()->getSettings()->buildWebhookUrl);
+        $gatsbyCloudDataSource = App::parseEnv(Plugin::getInstance()->getSettings()->gatsbyCloudDataSource);
 
         if (!empty($buildWebhookUrl) && $this->_buildQueued === false) {
             $this->_buildQueued = true;
-            Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($buildWebhookUrl) {
+            Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($buildWebhookUrl, $gatsbyCloudDataSource) {
                 $guzzle = Craft::createGuzzleClient([
                     'headers' => [
                         'x-preview-update-source' => 'Craft CMS',
+                        'x-gatsby-cloud-data-source' => $gatsbyCloudDataSource,
                         'Content-type' => 'application/json',
                     ],
                 ]);
