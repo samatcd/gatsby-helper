@@ -257,7 +257,7 @@ class Plugin extends \craft\base\Plugin
                                 console.log(event.previewTarget.url, event.target.elementEditor.preview.url)
 
                                 const compareTarget = event.previewTarget.url;
-                                const compareUrl = new URI(event.target.elementEditor.preview.url);
+                                const compareUrl = new URL(event.target.elementEditor.preview.url);
 
                                 if(compareTarget.pathname !== compareUrl.pathname) {
                                     console.warn('Preview URL is not the same as the current preview URL, not triggering a build');
