@@ -275,6 +275,8 @@ class Plugin extends \craft\base\Plugin
 
                                 }
 
+                                console.log('sending '.(doPreview ? 'preview' : 'build').' payload to $previewWebhookUrl', payload);
+
                                 http.send(JSON.stringify(payload));
                             };
 
@@ -283,6 +285,7 @@ class Plugin extends \craft\base\Plugin
                             });
 
                             Garnish.on(Craft.Preview, 'beforeUpdateIframe', debounce(function(event) {
+                                console.log('beforeUpdateIframe', event)
                                 alertGatsby(event, true);
                             }));
 
